@@ -1,0 +1,15 @@
+yolo_model:
+
+  config_file:
+    name: yolov3_fs_tiny.cfg
+  weight_file:
+    name: yolov3_fs_tiny.weights
+  threshold:
+    value: 0.60
+  detection_classes:
+    names:
+      - blue_cone
+      - yellow_cone
+      - orange_cone
+      - large_cone
+     
