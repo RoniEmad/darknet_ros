@@ -220,6 +220,14 @@ install(DIRECTORY config launch yolo_network_config
 )
 
 set(PATH "${CMAKE_CURRENT_SOURCE_DIR}/yolo_network_config/weights")
+set(FILE "${PATH}/yolov3_fs_tiny.weights")
+message(STATUS "Checking and downloading tiny weights")
+set(WEIGHTS_TINY_URL "https://github.com/asurt-fsai/darknet_ros/releases/download/pre-release/yolov3_fs_tiny.weights")
+
+if(NOT EXISTS "${FILE}")
+	message(STATUS "Weights not found, downloading...")
+	execute_process(COMMAND wget -q ${WEIGHTS_TINY_URL} -P ${PATH})
+endif()
 
 #############
 ## Testing ##
