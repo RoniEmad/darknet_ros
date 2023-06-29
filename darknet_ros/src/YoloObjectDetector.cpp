@@ -163,11 +163,15 @@ void YoloObjectDetector::cameraCallback(const sensor_msgs::ImageConstPtr& msg) {
 
   try {
     if (msg->encoding == "mono8" || msg->encoding == "bgr8" || msg->encoding == "rgb8") {
-      cam_image = cv_bridge::toCvCopy(msg, "rgb8");
+      if(msg->encoding == "bgr8"){
+        cam_image = cv_bridge::toCvCopy(msg, "rgb8");
+      }else{
+        cam_image = cv_bridge::toCvCopy(msg, "bgr8");
+      }
     } else if ( msg->encoding == "bgra8") {
-      cam_image = cv_bridge::toCvCopy(msg, "bgr8");
-    } else if ( msg->encoding == "rgba8") {
       cam_image = cv_bridge::toCvCopy(msg, "rgb8");
+    } else if ( msg->encoding == "rgba8") {
+      cam_image = cv_bridge::toCvCopy(msg, "bgr8");
     } else if ( msg->encoding == "mono16") {
       ROS_WARN_ONCE("Converting mono16 images to mono8");
       cam_image = cv_bridge::toCvCopy(msg, "mono8");
@@ -204,7 +208,7 @@ void YoloObjectDetector::checkForObjectsActionGoalCB() {
   cv_bridge::CvImagePtr cam_image;
 
   try {
-    cam_image = cv_bridge::toCvCopy(imageAction, sensor_msgs::image_encodings::RGB8);
+    cam_image = cv_bridge::toCvCopy(imageAction, sensor_msgs::image_encodings::BGR8);
   } catch (cv_bridge::Exception& e) {
     ROS_ERROR("cv_bridge exception: %s", e.what());
     return;
@@ -492,6 +496,7 @@ void YoloObjectDetector::yolo() {
   }
 
   demoTime_ = what_time_is_it_now();
+  ros::Rate pubRate(10);
 
   while (!demoDone_) {
     buffIndex_ = (buffIndex_ + 1) % 3;
@@ -517,6 +522,7 @@ void YoloObjectDetector::yolo() {
     if (!isNodeRunning()) {
       demoDone_ = true;
     }
+    pubRate.sleep();
   }
 }
 
