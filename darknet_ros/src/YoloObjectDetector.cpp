@@ -24,6 +24,7 @@ char* cfg;
 char* weights;
 char* data;
 char** detectionNames;
+int pubRate;
 
 YoloObjectDetector::YoloObjectDetector(ros::NodeHandle nh)
     : nodeHandle_(nh), imageTransport_(nodeHandle_), numClasses_(0), classLabels_(0), rosBoxes_(0), rosBoxCounter_(0) {
@@ -50,6 +51,7 @@ bool YoloObjectDetector::readParameters() {
   nodeHandle_.param("image_view/enable_opencv", viewImage_, true);
   nodeHandle_.param("image_view/wait_key_delay", waitKeyDelay_, 3);
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, false);
+  nodeHandle_.getParam("/darknet_ros/pub_rate", pubRate);
 
   // Check if Xserver is running on Linux.
   if (XOpenDisplay(NULL)) {
@@ -138,7 +140,7 @@ void YoloObjectDetector::init() {
   nodeHandle_.param("publishers/detection_image/topic", detectionImageTopicName, std::string("detection_image"));
   nodeHandle_.param("publishers/detection_image/queue_size", detectionImageQueueSize, 1);
   nodeHandle_.param("publishers/detection_image/latch", detectionImageLatch, true);
-
+  
   imageSubscriber_ = imageTransport_.subscribe(cameraTopicName, cameraQueueSize, &YoloObjectDetector::cameraCallback, this);
   objectPublisher_ =
       nodeHandle_.advertise<darknet_ros_msgs::ObjectCount>(objectDetectorTopicName, objectDetectorQueueSize, objectDetectorLatch);
@@ -496,7 +498,7 @@ void YoloObjectDetector::yolo() {
   }
 
   demoTime_ = what_time_is_it_now();
-  ros::Rate pubRate(10);
+  ros::Rate pubRateSleep(pubRate);
 
   while (!demoDone_) {
     buffIndex_ = (buffIndex_ + 1) % 3;
@@ -522,7 +524,7 @@ void YoloObjectDetector::yolo() {
     if (!isNodeRunning()) {
       demoDone_ = true;
     }
-    pubRate.sleep();
+    pubRateSleep.sleep();
   }
 }
 
